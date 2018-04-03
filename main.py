@@ -1,34 +1,35 @@
 import requests
 from time import sleep
 
-URL_POST = 'http://www.kuaidi100.com/autonumber/autoComNum?resultv2=1&text='
-URL_GET_1 = 'http://www.kuaidi100.com/query?type='
+URL_POST = 'https://www.kuaidi100.com/autonumber/autoComNum?resultv2=1&text='
+URL_GET_1 = 'https://www.kuaidi100.com/query?type='
 URL_GET_2 = '&postid='
 
 Headers_POST = {
-    'Accept': 'application/json, text/javascript, */*; q=0.01',
-    'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'zh-CN,zh;q=0.9',
-    'Connection': 'keep-alive',
-    'Content-Length': '0',
-    'Cookie': 'WWWID=WWW3F30DFB3995C953FD8BA2CEBA8DE2BEE; Hm_lvt_22ea01af58ba2be0fec7c11b25e88e6c=1522232162,1522318861,1522366167,1522382284; Hm_lpvt_22ea01af58ba2be0fec7c11b25e88e6c=1522382286',
-    'Host': 'www.kuaidi100.com',
-    'Origin': 'http://www.kuaidi100.com',
-    'Referer': 'http://www.kuaidi100.com/',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
-    'X-Requested-With': 'XMLHttpRequest'
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "zh-CN,zh;q=0.9",
+    "Connection": "keep-alive",
+    "Content-Length": "0",
+    "Cookie": "WWWID=WWW90E8ABA610750CB881E75525FD6D1E40; sortStatus=0; Hm_lvt_22ea01af58ba2be0fec7c11b25e88e6c=1522366167,1522382284,1522656099,1522657225; Hm_lpvt_22ea01af58ba2be0fec7c11b25e88e6c=1522657227",
+    "Host": "www.kuaidi100.com",
+    "Origin": "https://www.kuaidi100.com",
+    "Referer": "https://www.kuaidi100.com/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
+    "X-Requested-With": "XMLHttpRequest"
 }
 Headers_GET = {
-    'Accept': 'application/json, text/javascript, */*; q=0.01',
-    'Accept-Encoding': 'gzip, deflate',
-    'Accept-Language': 'zh-CN,zh;q=0.9',
-    'Connection': 'keep-alive',
-    'Cookie': 'WWWID=WWW3F30DFB3995C953FD8BA2CEBA8DE2BEE; Hm_lvt_22ea01af58ba2be0fec7c11b25e88e6c=1522232162,1522318861,1522366167,1522382284; Hm_lpvt_22ea01af58ba2be0fec7c11b25e88e6c=1522382286',
-    'Host': 'www.kuaidi100.com',
-    'Referer': 'http://www.kuaidi100.com/',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
-    'X-Requested-With': 'XMLHttpRequest'
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "zh-CN,zh;q=0.9",
+    "Connection": "keep-alive",
+    "Cookie": "WWWID=WWW90E8ABA610750CB881E75525FD6D1E40; sortStatus=0; Hm_lvt_22ea01af58ba2be0fec7c11b25e88e6c=1522366167,1522382284,1522656099,1522657225; Hm_lpvt_22ea01af58ba2be0fec7c11b25e88e6c=1522657227",
+    "Host": "www.kuaidi100.com",
+    "Referer": "https://www.kuaidi100.com/",
+    "User-Agent": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
+    "X-Requested-With": "XMLHttpRequest"
 }
+
 
 def get_wuliu(Result_FileName, SleepTime):
     # 获取物流单号
@@ -38,7 +39,7 @@ def get_wuliu(Result_FileName, SleepTime):
 
     with open('%s.txt' % Result_FileName, 'w', encoding='utf-8') as f:
         # 写入标题
-        f.write('postid,message,time,ftime,context')
+        f.write('postid,com,message,time,ftime,context' + '\n')
         postid_num = 0
         for x in postid_list:
             postid = x.strip('\n')
@@ -50,31 +51,32 @@ def get_wuliu(Result_FileName, SleepTime):
             comCode = [i['comCode'] for i in autodata]
 
             # 首先尝试使用首个推荐的Code获取，如果结果为空则使用while循环获取后面推荐的Code，直至尝试完所有的推荐后用break退出循环
-            r_data = requests.get(URL_GET_1 + comCode[0] + URL_GET_2 + postid)
+            r_data = requests.get(URL_GET_1 + comCode[0] + URL_GET_2 + postid, headers=Headers_GET)
             wuliu_json = r_data.json()['data']
-            Num =1
+            Num = 1
             while wuliu_json == []:
                 if Num == len(comCode): break
                 r_data = requests.get(URL_GET_1 + comCode[Num] + URL_GET_2 + postid)
                 wuliu_json = r_data.json()['data']
                 Num += 1
-
-            if wuliu_json ==[]:
-                f.write('%s,%s,%s,%s,%s' % (postid, r_data.json()['message'], '', '', '' + '\n'))
+            if wuliu_json == []:
+                f.write('%s,%s,%s,%s,%s,%s' % (postid, r_data.json()['com'], r_data.json()['message'], '', '', '' + '\n'))
             else:
                 for wuliu in wuliu_json:
-                    f.write('%s,%s,%s,%s,%s' % (postid, r_data.json()['message'], wuliu['time'], wuliu['ftime'], wuliu['context'] + '\n'))
-        sleep(SleepTime)
-    f.close()
+                    f.write('%s,%s,%s,%s,%s,%s' % (
+                    postid, r_data.json()['com'], r_data.json()['message'], wuliu['time'], wuliu['ftime'], wuliu['context'].replace(',','，') + '\n'))
+            sleep(SleepTime)
+        f.close()
+
 
 if __name__ == '__main__':
     '''
     文件说明：
     postid.txt: 待爬取物流信息的物流单号，一行一个物流单号
     main.py: 爬虫的主程序，可直接执行
-    
+
     参数说明：get_wuliu(Result_FileName, SleepTime)
     Result_FileName: 储存文件的名字，可自行修改，默认为“Result.txt”
     sleep_time: 每次爬取的停止间隔，越大越不容易被封，默认为“2”
     '''
-    get_wuliu("Result", 2)
+    get_wuliu("Result", 3)
